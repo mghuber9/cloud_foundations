@@ -7,29 +7,33 @@
   <style>
     :root{
       --bg:#0b1220; --panel:#101a2e; --panel2:#0f172a; --text:#e5e7eb;
-      --muted:#a7b0c0; --accent:#60a5fa; --good:#34d399; --bad:#fb7185; --warn:#fbbf24;
-      --card:#0b162c; --line:#23324b;
+      --muted:#a7b0c0; --accent:#60a5fa; --good:#34d399; --bad:#fb7185;
       --shadow: 0 10px 20px rgba(0,0,0,.25);
       --radius: 14px;
       --font: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
     }
     *{box-sizing:border-box}
     body{
-      margin:0; font-family:var(--font); background:linear-gradient(180deg,#070b14 0%, #0b1220 40%, #070b14 100%);
+      margin:0; font-family:var(--font);
+      background:linear-gradient(180deg,#070b14 0%, #0b1220 40%, #070b14 100%);
       color:var(--text);
     }
     header{
       padding:20px 18px 10px;
-      max-width:1200px; margin:0 auto;
+      max-width:1400px; margin:0 auto;
     }
     h1{margin:0 0 6px; font-size:20px; font-weight:750; letter-spacing:.2px}
     .sub{margin:0; color:var(--muted); font-size:14px}
 
+    /* 3-column layout */
     .wrap{
-      max-width:1200px; margin:0 auto; padding:12px 18px 22px;
-      display:grid; grid-template-columns: 1.2fr .8fr; gap:14px;
+      max-width:1400px; margin:0 auto; padding:12px 18px 22px;
+      display:grid;
+      grid-template-columns: 1.25fr .75fr 1fr;
+      gap:14px;
+      align-items:stretch;
     }
-    @media (max-width: 980px){
+    @media (max-width: 1120px){
       .wrap{grid-template-columns: 1fr; }
     }
 
@@ -41,13 +45,13 @@
       overflow:hidden;
       display:flex;
       flex-direction:column;
-      min-height: 0;
+      min-height:0;
     }
     .cardHead{
       padding:14px 14px 10px;
       border-bottom:1px solid rgba(255,255,255,.06);
       display:flex; align-items:flex-start; justify-content:space-between; gap:10px;
-      flex: 0 0 auto;
+      flex:0 0 auto;
     }
     .cardHead h2{margin:0; font-size:16px; font-weight:750}
     .pill{
@@ -57,38 +61,43 @@
       white-space:nowrap;
     }
 
-    /* Make the overall panels fit viewport better */
+    /* Make left+right panels use viewport height; middle bank stays its own panel */
     .vhBox{
       height: calc(100vh - 120px);
       min-height: 520px;
     }
-    @media (max-width: 980px){
-      .vhBox{ height: auto; }
+    @media (max-width: 1120px){
+      .vhBox{ height:auto; min-height:auto; }
     }
 
-    .content{
-      padding:14px;
-      min-height:0;
-    }
-
-    /* LEFT: scrolling content (word bank + sentences) */
-    .leftScroll{
+    /* Scrollers */
+    .scrollArea{
       overflow:auto;
       padding:14px;
       min-height:0;
+      flex:1 1 auto;
     }
 
-    /* RIGHT: fixed top controls + scrollable corrections */
+    /* Right panel: fixed controls + scrolling corrections */
     .rightTop{
       padding:14px;
       border-bottom:1px solid rgba(255,255,255,.06);
-      flex: 0 0 auto;
+      flex:0 0 auto;
     }
     .rightBottom{
       padding:14px;
       overflow:auto;
       min-height:0;
-      flex: 1 1 auto;
+      flex:1 1 auto;
+    }
+
+    /* Bank panel should NOT scroll with sentences.
+       It can be its own panel; we keep it auto-height.
+       If you *never* want it to internally scroll either, keep overflow: visible. */
+    .bankBody{
+      padding:14px;
+      overflow:visible;
+      flex:1 1 auto;
     }
 
     .controls{
@@ -111,18 +120,10 @@
       border-color: rgba(255,255,255,.12);
       font-weight:650;
     }
-    button.danger{
-      background:rgba(251,113,133,.12);
-      border-color: rgba(251,113,133,.4);
-    }
 
-    .hint{
-      color:var(--muted); font-size:13px; line-height:1.35;
-    }
+    .hint{ color:var(--muted); font-size:13px; line-height:1.35; }
 
-    .grid{
-      display:grid; grid-template-columns: 1fr; gap:10px;
-    }
+    .grid{ display:grid; grid-template-columns: 1fr; gap:10px; }
     .q{
       padding:12px;
       border:1px solid rgba(255,255,255,.08);
@@ -147,16 +148,13 @@
       gap:8px;
       user-select:none;
     }
-    .blank.filled{
-      border-style:solid;
-      border-color: rgba(96,165,250,.45);
-      background:rgba(96,165,250,.10);
-    }
     .blank.correct{
+      border-style:solid;
       border-color: rgba(52,211,153,.55);
       background:rgba(52,211,153,.12);
     }
     .blank.incorrect{
+      border-style:solid;
       border-color: rgba(251,113,133,.55);
       background:rgba(251,113,133,.10);
     }
@@ -220,9 +218,18 @@
     .dot.bad{background:var(--bad)}
     .dot.neutral{background:rgba(255,255,255,.22)}
 
-    .sideList{
-      display:grid; gap:10px;
+    select{
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:12px;
+      padding:10px 10px;
+      color:var(--text);
+      font-weight:700;
+      width:100%;
     }
+    option{background:#0b1220}
+
+    .sideList{ display:grid; gap:10px; }
     .fix{
       padding:12px;
       border-radius:14px;
@@ -255,22 +262,10 @@
       line-height:1.35;
     }
 
-    select{
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.14);
-      border-radius:12px;
-      padding:10px 10px;
-      color:var(--text);
-      font-weight:700;
-      width: 100%;
-    }
-    option{background:#0b1220}
-
     footer{
-      max-width:1200px; margin:0 auto; padding:0 18px 22px;
+      max-width:1400px; margin:0 auto; padding:0 18px 22px;
       color:var(--muted); font-size:12px;
     }
-    a{color:var(--accent)}
   </style>
 </head>
 <body>
@@ -280,30 +275,42 @@
 </header>
 
 <div class="wrap">
-  <!-- LEFT: QUIZ (scrolling sentences + bank) -->
-  <section class="card vhBox" aria-label="Quiz">
+
+  <!-- LEFT: SENTENCES (scroll) -->
+  <section class="card vhBox" aria-label="Sentences">
     <div class="cardHead">
       <h2>Sentences</h2>
       <div class="pill" id="progressPill">0 / 18 filled</div>
     </div>
-
-    <div class="leftScroll">
-      <h3 style="margin:0 0 10px;font-size:14px;color:var(--muted);">Word Bank</h3>
-      <div id="bank" class="bank" aria-label="Word bank (drag terms from here)" tabindex="0"></div>
-
-      <h3 style="margin:16px 0 10px;font-size:14px;color:var(--muted);">Sentences</h3>
+    <div class="scrollArea">
       <div id="questions" class="grid"></div>
     </div>
   </section>
 
-  <!-- RIGHT: CONTROLS (fixed) + CORRECTIONS (scrolling) -->
-  <aside class="card vhBox" aria-label="Controls and Corrections">
+  <!-- MIDDLE: WORD BANK (separate panel, not tied to sentence scrolling, not in corrections panel) -->
+  <section class="card" aria-label="Word Bank">
+    <div class="cardHead">
+      <h2>Word Bank</h2>
+      <div class="pill" id="bankPill">Drag terms</div>
+    </div>
+    <div class="bankBody">
+      <div class="hint" style="margin-bottom:10px;">
+        Drag a term into a blank. You can drag a placed term back out to remove it.
+      </div>
+      <div id="bank" class="bank" aria-label="Word bank (drag terms from here)" tabindex="0"></div>
+      <div class="tapHint" style="margin-top:12px;">
+        <b>Phone / tablet tip:</b> Select a term in the dropdown (right panel), then tap a blank to place it.
+      </div>
+    </div>
+  </section>
+
+  <!-- RIGHT: CONTROLS (fixed) + CORRECTIONS (scroll) -->
+  <aside class="card vhBox" aria-label="Quiz and Corrections">
     <div class="cardHead">
       <h2>Quiz</h2>
       <div class="pill" id="missedPill">Missed: —</div>
     </div>
 
-    <!-- Fixed / non-scrolling top area -->
     <div class="rightTop">
       <div class="controls">
         <div class="btnRow">
@@ -313,8 +320,8 @@
           <button class="secondary" id="shuffleSentencesBtn">Shuffle Sentences</button>
         </div>
         <div class="hint">
-          Tip: You can drag a term back to the bank to remove it.<br>
-          Mobile-friendly: tap a term, then tap a blank.
+          Tip: Double-click a blank to clear it (desktop).<br>
+          Tap-to-place works on mobile.
         </div>
       </div>
 
@@ -337,21 +344,16 @@
         <span><span class="dot bad"></span>Incorrect</span>
       </div>
 
-      <div class="tapHint">
-        <b>Phone / tablet tip:</b> If dragging is annoying, use the dropdown:
-        select a term → tap a blank to place it.
-      </div>
-
       <div class="hint" style="margin-top:12px;">
-        After you submit, only the blanks you missed will show below, with the full sentence for context.
+        After you submit, missed blanks will show below with the full sentence for context.
       </div>
     </div>
 
-    <!-- Scrollable corrections area -->
     <div class="rightBottom">
       <div id="corrections" class="sideList"></div>
     </div>
   </aside>
+
 </div>
 
 <footer>
@@ -369,20 +371,19 @@
     b7: "Some computers process data, meaning they perform calculations or actions on it.",
     b8: "Redundancy means having multiple systems available so a failure does not bring everything down.",
     b9: "Uptime refers to how long a system is available and functioning.",
-    b10: "Downtime refers to periods when a system is unavailable or offline.",
-    b11: "Instead of buying hardware, companies can rent computing power from cloud providers.",
-    b12: "Scaling up means adding resources when demand increases.",
-    b13: "Scaling down means removing resources when demand decreases.",
-    b14: "Usage-based pricing means you only pay for the resources you actually use.",
-    b15: "Bandwidth describes how much data can be transferred at one time.",
-    b16: "Latency refers to the delay between sending data and receiving it.",
-    b17: "Web development relies on cloud systems to host websites and applications.",
-    b18: "Software development depends on cloud infrastructure for testing, storage, and deployment.",
-    b19: "Demand can change quickly as user needs increase or decrease.",
-    b20: "Hardware changes more slowly because physical systems take time to build and replace."
+    b10:"Downtime refers to periods when a system is unavailable or offline.",
+    b11:"Instead of buying hardware, companies can rent computing power from cloud providers.",
+    b12:"Scaling up means adding resources when demand increases.",
+    b13:"Scaling down means removing resources when demand decreases.",
+    b14:"Usage-based pricing means you only pay for the resources you actually use.",
+    b15:"Bandwidth describes how much data can be transferred at one time.",
+    b16:"Latency refers to the delay between sending data and receiving it.",
+    b17:"Web development relies on cloud systems to host websites and applications.",
+    b18:"Software development depends on cloud infrastructure for testing, storage, and deployment.",
+    b19:"Demand can change quickly as user needs increase or decrease.",
+    b20:"Hardware changes more slowly because physical systems take time to build and replace."
   };
 
-  // ====== DATA ======
   const WORD_BANK = [
     "cloud","client","server","internet","data centers","networks","process","redundancy",
     "uptime","downtime","rent","scaling","usage-based","bandwidth","latency",
@@ -414,19 +415,13 @@
     }
     return a;
   }
-
   function escapeHtml(s){
     return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
   }
 
-  // ====== STATE ======
   const state = {
-    filled: {},       // blankId -> chosen word
-    usedCount: {},    // word -> count used (scaling allowed twice)
-    submitted: false,
-    selectedTapWord: "",
-    bankOrder: [],
-    quizOrder: []     // array of question objects in current order
+    filled: {}, usedCount: {}, submitted:false, selectedTapWord:"",
+    bankOrder: [], quizOrder: []
   };
 
   function buildBlanks(quizArr){
@@ -438,6 +433,8 @@
     }
     return out;
   }
+
+  let BLANKS = [];
 
   function updateProgress(){
     const total = BLANKS.length;
@@ -457,12 +454,10 @@
     const max = (word === "scaling") ? 2 : 1;
     return (state.usedCount[word] || 0) < max;
   }
-
   function markWordUsed(word, delta){
     state.usedCount[word] = (state.usedCount[word] || 0) + delta;
     if (state.usedCount[word] <= 0) delete state.usedCount[word];
   }
-
   function setBlank(blankId, word){
     if (state.filled[blankId]){
       const old = state.filled[blankId];
@@ -471,11 +466,9 @@
     }
     if (!word) return;
     if (!canUseWord(word)) return;
-
     state.filled[blankId] = word;
     markWordUsed(word, +1);
   }
-
   function clearBlank(blankId){
     if (state.filled[blankId]){
       const old = state.filled[blankId];
@@ -542,18 +535,12 @@
       container.appendChild(div);
     });
 
-    // Attach DnD + tap handlers
     container.querySelectorAll(".blank").forEach(blank => {
       const blankId = blank.dataset.blank;
 
-      blank.addEventListener("dragover", e => {
-        e.preventDefault();
-        blank.classList.add("dragOver");
-      });
-      blank.addEventListener("dragleave", () => blank.classList.remove("dragOver"));
+      blank.addEventListener("dragover", e => { e.preventDefault(); });
       blank.addEventListener("drop", e => {
         e.preventDefault();
-        blank.classList.remove("dragOver");
         const word = e.dataTransfer.getData("text/plain");
         if (!word) return;
         setBlank(blankId, word);
@@ -582,9 +569,9 @@
       });
     });
 
-    // Dragging out of a blank clears it
+    // Drag out of blank clears it
     container.querySelectorAll(".blank").forEach(blank => {
-      blank.setAttribute("draggable", "true");
+      blank.setAttribute("draggable","true");
       blank.addEventListener("dragstart", e => {
         const bid = blank.dataset.blank;
         const word = state.filled[bid];
@@ -599,7 +586,6 @@
   function grade(){
     const results = [];
     let correctCount = 0;
-
     for (const b of BLANKS){
       const your = (state.filled[b.blankId] || "").trim().toLowerCase();
       const correct = b.correct.toLowerCase();
@@ -614,7 +600,8 @@
     const panel = document.getElementById("corrections");
     const missed = gradeObj.results.filter(r => !r.ok);
 
-    document.getElementById("missedPill").textContent = `Missed: ${state.submitted ? missed.length : "—"}`;
+    document.getElementById("missedPill").textContent =
+      `Missed: ${state.submitted ? missed.length : "—"}`;
 
     panel.innerHTML = "";
     if (!state.submitted){
@@ -633,7 +620,6 @@
     missed.forEach(r => {
       let ctx = r.questionText;
 
-      // Replace all blanks in that sentence: missed blank becomes _____, others show filled or correct.
       for (const other of BLANKS.filter(b => b.qid === r.qid)) {
         const replacement =
           other.blankId === r.blankId
@@ -657,8 +643,7 @@
         </div>
         <p style="margin-top:8px;">
           <b>Why:</b> ${escapeHtml(EXPLANATIONS[r.blankId] || "")}
-        </p>
-      `;
+        </p>`;
       panel.appendChild(div);
     });
   }
@@ -679,7 +664,6 @@
     renderQuestions();
     updateProgress();
 
-    // If already submitted, keep showing grading/corrections consistent with current answers.
     if (state.submitted){
       const g = grade();
       renderCorrections(g);
@@ -687,15 +671,13 @@
     }
   }
 
-  // ====== INIT ======
-  let BLANKS = [];
-
   function init(){
     state.filled = {};
     state.usedCount = {};
     state.submitted = false;
+    state.selectedTapWord = "";
     state.bankOrder = shuffle(WORD_BANK);
-    state.quizOrder = QUIZ_BASE.slice(); // start in original order
+    state.quizOrder = QUIZ_BASE.slice();
 
     BLANKS = buildBlanks(state.quizOrder);
 
@@ -708,7 +690,7 @@
     renderCorrections({results:[], correctCount:0, total:BLANKS.length});
   }
 
-  // ====== BUTTONS ======
+  // Buttons
   document.getElementById("submitBtn").addEventListener("click", () => {
     const g = grade();
     state.submitted = true;
@@ -724,22 +706,16 @@
     paintAfterSubmit(g);
   });
 
-  document.getElementById("resetBtn").addEventListener("click", () => {
-    init();
-  });
+  document.getElementById("resetBtn").addEventListener("click", init);
 
   document.getElementById("shuffleBtn").addEventListener("click", () => {
     state.bankOrder = shuffle(WORD_BANK);
     rerenderAll();
   });
 
-  // NEW: Shuffle sentences (question order)
   document.getElementById("shuffleSentencesBtn").addEventListener("click", () => {
     state.quizOrder = shuffle(state.quizOrder);
-
-    // Rebuild BLANKS in the new order (same blanks/answers, just ordering for grading/context)
     BLANKS = buildBlanks(state.quizOrder);
-
     rerenderAll();
   });
 
