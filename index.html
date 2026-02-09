@@ -299,6 +299,31 @@
 </footer>
 
 <script>
+
+  const EXPLANATIONS = {
+  b1: "The cloud refers to computers you do not own that are accessed over the internet. These computers handle storage and processing for users.",
+  b2: "A client is the device a user controls directly, such as a laptop, phone, or tablet.",
+  b3: "A server is a remote computer that provides data or services to clients.",
+  b4: "The internet is the global network that allows clients and servers to communicate.",
+  b5: "Data centers are facilities that house many servers working together to provide cloud services.",
+  b6: "Networks are the connections that allow computers to send data to one another.",
+  b7: "Some computers process data, meaning they perform calculations or actions on it.",
+  b8: "Redundancy means having multiple systems available so a failure does not bring everything down.",
+  b9: "Uptime refers to how long a system is available and functioning.",
+  b10: "Downtime refers to periods when a system is unavailable or offline.",
+  b11: "Instead of buying hardware, companies can rent computing power from cloud providers.",
+  b12: "Scaling up means adding resources when demand increases.",
+  b13: "Scaling down means removing resources when demand decreases.",
+  b14: "Usage-based pricing means you only pay for the resources you actually use.",
+  b15: "Bandwidth describes how much data can be transferred at one time.",
+  b16: "Latency refers to the delay between sending data and receiving it.",
+  b17: "Web development relies on cloud systems to host websites and applications.",
+  b18: "Software development depends on cloud infrastructure for testing, storage, and deployment.",
+  b19: "Demand can change quickly as user needs increase or decrease.",
+  b20: "Hardware changes more slowly because physical systems take time to build and replace."
+};
+
+  
   // ====== DATA (from the PDF) ======
   const WORD_BANK = [
     "cloud","client","server","internet","data centers","networks","process","redundancy",
@@ -627,13 +652,17 @@
       const div = document.createElement("div");
       div.className = "fix";
       div.innerHTML = `
-        <h3>Blank ${r.blankId.replace("b","")}</h3>
-        <p><b>Sentence:</b> ${escapeHtml(ctx)}</p>
-        <div class="row">
-          <span class="tag bad">Your answer: ${escapeHtml(r.your || "—")}</span>
-          <span class="tag good">Correct: ${escapeHtml(r.correct)}</span>
-        </div>
-      `;
+  <h3>Blank ${r.blankId.replace("b","")}</h3>
+  <p><b>Sentence:</b> ${escapeHtml(ctx)}</p>
+  <div class="row">
+    <span class="tag bad">Your answer: ${escapeHtml(r.your || "—")}</span>
+    <span class="tag good">Correct: ${escapeHtml(r.correct)}</span>
+  </div>
+  <p style="margin-top:8px;">
+    <b>Why:</b> ${escapeHtml(EXPLANATIONS[r.blankId] || "")}
+  </p>
+`;
+
       panel.appendChild(div);
     });
   }
