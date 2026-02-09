@@ -1,0 +1,753 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Track 1: Cloud Foundations — Drag & Drop Check for Understanding</title>
+  <style>
+    :root{
+      --bg:#0b1220; --panel:#101a2e; --panel2:#0f172a; --text:#e5e7eb;
+      --muted:#a7b0c0; --accent:#60a5fa; --good:#34d399; --bad:#fb7185; --warn:#fbbf24;
+      --card:#0b162c; --line:#23324b;
+      --shadow: 0 10px 20px rgba(0,0,0,.25);
+      --radius: 14px;
+      --font: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:var(--font); background:linear-gradient(180deg,#070b14 0%, #0b1220 40%, #070b14 100%);
+      color:var(--text);
+    }
+    header{
+      padding:20px 18px 10px;
+      max-width:1200px; margin:0 auto;
+    }
+    h1{margin:0 0 6px; font-size:20px; font-weight:750; letter-spacing:.2px}
+    .sub{margin:0; color:var(--muted); font-size:14px}
+
+    .wrap{
+      max-width:1200px; margin:0 auto; padding:12px 18px 22px;
+      display:grid; grid-template-columns: 1.2fr .8fr; gap:14px;
+    }
+    @media (max-width: 980px){
+      .wrap{grid-template-columns: 1fr; }
+    }
+
+    .card{
+      background:linear-gradient(180deg,var(--panel) 0%, var(--panel2) 100%);
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      min-height: 0;
+    }
+    .cardHead{
+      padding:14px 14px 10px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      display:flex; align-items:flex-start; justify-content:space-between; gap:10px;
+      flex: 0 0 auto;
+    }
+    .cardHead h2{margin:0; font-size:16px; font-weight:750}
+    .pill{
+      font-size:12px; color:var(--muted);
+      border:1px solid rgba(255,255,255,.10);
+      padding:6px 10px; border-radius:999px;
+      white-space:nowrap;
+    }
+
+    /* Make the overall panels fit viewport better */
+    .vhBox{
+      height: calc(100vh - 120px);
+      min-height: 520px;
+    }
+    @media (max-width: 980px){
+      .vhBox{ height: auto; }
+    }
+
+    .content{
+      padding:14px;
+      min-height:0;
+    }
+
+    /* LEFT: scrolling content (word bank + sentences) */
+    .leftScroll{
+      overflow:auto;
+      padding:14px;
+      min-height:0;
+    }
+
+    /* RIGHT: fixed top controls + scrollable corrections */
+    .rightTop{
+      padding:14px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      flex: 0 0 auto;
+    }
+    .rightBottom{
+      padding:14px;
+      overflow:auto;
+      min-height:0;
+      flex: 1 1 auto;
+    }
+
+    .controls{
+      display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between;
+      margin-bottom:12px;
+    }
+    .btnRow{display:flex; flex-wrap:wrap; gap:10px}
+    button{
+      background:rgba(96,165,250,.15);
+      border:1px solid rgba(96,165,250,.35);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    button:hover{border-color: rgba(96,165,250,.6)}
+    button.secondary{
+      background:rgba(255,255,255,.06);
+      border-color: rgba(255,255,255,.12);
+      font-weight:650;
+    }
+    button.danger{
+      background:rgba(251,113,133,.12);
+      border-color: rgba(251,113,133,.4);
+    }
+
+    .hint{
+      color:var(--muted); font-size:13px; line-height:1.35;
+    }
+
+    .grid{
+      display:grid; grid-template-columns: 1fr; gap:10px;
+    }
+    .q{
+      padding:12px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(11,22,44,.55);
+      border-radius:14px;
+      line-height:1.55;
+      font-size:15px;
+    }
+
+    .blank{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:120px;
+      padding:6px 10px;
+      margin:0 4px;
+      border-radius:12px;
+      border:1px dashed rgba(255,255,255,.22);
+      background:rgba(255,255,255,.04);
+      vertical-align:middle;
+      position:relative;
+      gap:8px;
+      user-select:none;
+    }
+    .blank.filled{
+      border-style:solid;
+      border-color: rgba(96,165,250,.45);
+      background:rgba(96,165,250,.10);
+    }
+    .blank.correct{
+      border-color: rgba(52,211,153,.55);
+      background:rgba(52,211,153,.12);
+    }
+    .blank.incorrect{
+      border-color: rgba(251,113,133,.55);
+      background:rgba(251,113,133,.10);
+    }
+    .blank small{
+      color:var(--muted);
+      position:absolute; top:-9px; left:10px;
+      background:rgba(16,26,46,.95);
+      padding:0 6px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.08);
+      font-size:11px;
+    }
+
+    .token{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:8px 10px;
+      border-radius:12px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.14);
+      cursor:grab;
+      font-weight:750;
+      user-select:none;
+      box-shadow: 0 8px 16px rgba(0,0,0,.22);
+    }
+    .token:active{cursor:grabbing}
+    .token.used{
+      opacity:.45;
+      text-decoration: line-through;
+      cursor:not-allowed;
+    }
+
+    .bank{
+      min-height:110px;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(11,22,44,.45);
+      display:flex; flex-wrap:wrap; gap:8px;
+    }
+    .bank.dragOver{outline:2px solid rgba(96,165,250,.5)}
+
+    .scoreBox{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(11,22,44,.45);
+      margin-bottom:12px;
+    }
+    .scoreText{font-weight:800}
+    .status{color:var(--muted); font-size:13px}
+
+    .legend{
+      display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+      color:var(--muted); font-size:12px; margin-top:8px;
+    }
+    .dot{width:10px; height:10px; border-radius:999px; display:inline-block; margin-right:6px}
+    .dot.good{background:var(--good)}
+    .dot.bad{background:var(--bad)}
+    .dot.neutral{background:rgba(255,255,255,.22)}
+
+    .sideList{
+      display:grid; gap:10px;
+    }
+    .fix{
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(11,22,44,.55);
+    }
+    .fix h3{margin:0 0 6px; font-size:14px}
+    .fix p{margin:6px 0; color:var(--muted); font-size:13px; line-height:1.35}
+    .fix .row{
+      display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:8px;
+      font-size:13px;
+    }
+    .tag{
+      padding:6px 10px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.05);
+      font-weight:700;
+    }
+    .tag.good{border-color: rgba(52,211,153,.45); background:rgba(52,211,153,.10)}
+    .tag.bad{border-color: rgba(251,113,133,.45); background:rgba(251,113,133,.10)}
+
+    .tapHint{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.04);
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.35;
+    }
+
+    select{
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:12px;
+      padding:10px 10px;
+      color:var(--text);
+      font-weight:700;
+      width: 100%;
+    }
+    option{background:#0b1220}
+
+    footer{
+      max-width:1200px; margin:0 auto; padding:0 18px 22px;
+      color:var(--muted); font-size:12px;
+    }
+    a{color:var(--accent)}
+  </style>
+</head>
+<body>
+<header>
+  <h1>Track 1: Cloud Foundations — Drag & Drop Check for Understanding</h1>
+  <p class="sub">Drag terms from the word bank into the blanks. Then click <b>Submit</b> to see your score and corrections.</p>
+</header>
+
+<div class="wrap">
+  <!-- LEFT: QUIZ (scrolling sentences + bank) -->
+  <section class="card vhBox" aria-label="Quiz">
+    <div class="cardHead">
+      <h2>Sentences</h2>
+      <div class="pill" id="progressPill">0 / 18 filled</div>
+    </div>
+
+    <div class="leftScroll">
+      <h3 style="margin:0 0 10px;font-size:14px;color:var(--muted);">Word Bank</h3>
+      <div id="bank" class="bank" aria-label="Word bank (drag terms from here)" tabindex="0"></div>
+
+      <h3 style="margin:16px 0 10px;font-size:14px;color:var(--muted);">Sentences</h3>
+      <div id="questions" class="grid"></div>
+    </div>
+  </section>
+
+  <!-- RIGHT: CONTROLS (fixed) + CORRECTIONS (scrolling) -->
+  <aside class="card vhBox" aria-label="Controls and Corrections">
+    <div class="cardHead">
+      <h2>Quiz</h2>
+      <div class="pill" id="missedPill">Missed: —</div>
+    </div>
+
+    <!-- Fixed / non-scrolling top area -->
+    <div class="rightTop">
+      <div class="controls">
+        <div class="btnRow">
+          <button id="submitBtn">Submit</button>
+          <button class="secondary" id="resetBtn">Reset</button>
+          <button class="secondary" id="shuffleBtn">Shuffle Word Bank</button>
+          <button class="secondary" id="shuffleSentencesBtn">Shuffle Sentences</button>
+        </div>
+        <div class="hint">
+          Tip: You can drag a term back to the bank to remove it.<br>
+          Mobile-friendly: tap a term, then tap a blank.
+        </div>
+      </div>
+
+      <div class="scoreBox" role="status" aria-live="polite">
+        <div>
+          <div class="scoreText" id="scoreText">Score: —</div>
+          <div class="status" id="scoreStatus">Fill the blanks, then submit.</div>
+        </div>
+        <div style="min-width:180px;">
+          <label for="tapSelect" class="status" style="display:block;margin-bottom:6px;">Tap-to-place (optional)</label>
+          <select id="tapSelect">
+            <option value="">Tap a term to select…</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="legend" aria-hidden="true">
+        <span><span class="dot neutral"></span>Blank</span>
+        <span><span class="dot good"></span>Correct</span>
+        <span><span class="dot bad"></span>Incorrect</span>
+      </div>
+
+      <div class="tapHint">
+        <b>Phone / tablet tip:</b> If dragging is annoying, use the dropdown:
+        select a term → tap a blank to place it.
+      </div>
+
+      <div class="hint" style="margin-top:12px;">
+        After you submit, only the blanks you missed will show below, with the full sentence for context.
+      </div>
+    </div>
+
+    <!-- Scrollable corrections area -->
+    <div class="rightBottom">
+      <div id="corrections" class="sideList"></div>
+    </div>
+  </aside>
+</div>
+
+<footer>
+  <div>Built from your “Track 1: Cloud Foundations — Check for Understanding” worksheet.</div>
+</footer>
+
+<script>
+  const EXPLANATIONS = {
+    b1: "The cloud refers to computers you do not own that are accessed over the internet. These computers handle storage and processing for users.",
+    b2: "A client is the device a user controls directly, such as a laptop, phone, or tablet.",
+    b3: "A server is a remote computer that provides data or services to clients.",
+    b4: "The internet is the global network that allows clients and servers to communicate.",
+    b5: "Data centers are facilities that house many servers working together to provide cloud services.",
+    b6: "Networks are the connections that allow computers to send data to one another.",
+    b7: "Some computers process data, meaning they perform calculations or actions on it.",
+    b8: "Redundancy means having multiple systems available so a failure does not bring everything down.",
+    b9: "Uptime refers to how long a system is available and functioning.",
+    b10: "Downtime refers to periods when a system is unavailable or offline.",
+    b11: "Instead of buying hardware, companies can rent computing power from cloud providers.",
+    b12: "Scaling up means adding resources when demand increases.",
+    b13: "Scaling down means removing resources when demand decreases.",
+    b14: "Usage-based pricing means you only pay for the resources you actually use.",
+    b15: "Bandwidth describes how much data can be transferred at one time.",
+    b16: "Latency refers to the delay between sending data and receiving it.",
+    b17: "Web development relies on cloud systems to host websites and applications.",
+    b18: "Software development depends on cloud infrastructure for testing, storage, and deployment.",
+    b19: "Demand can change quickly as user needs increase or decrease.",
+    b20: "Hardware changes more slowly because physical systems take time to build and replace."
+  };
+
+  // ====== DATA ======
+  const WORD_BANK = [
+    "cloud","client","server","internet","data centers","networks","process","redundancy",
+    "uptime","downtime","rent","scaling","usage-based","bandwidth","latency",
+    "web","software","demand","hardware"
+  ];
+
+  const QUIZ_BASE = [
+    { id:"q1", text:"The {b1} is someone else’s computers that you use over the internet.", answers:{ b1:"cloud" } },
+    { id:"q2", text:"Your device is the {b2}. The remote computer is the {b3}. The {b4} connects them.", answers:{ b2:"client", b3:"server", b4:"internet" } },
+    { id:"q3", text:"Cloud systems use many computers in {b5} working together.", answers:{ b5:"data centers" } },
+    { id:"q4", text:"Computers communicate through {b6}. Some computers store data, while others {b7} data.", answers:{ b6:"networks", b7:"process" } },
+    { id:"q5", text:"{b8} allows systems to stay online even if one computer fails.", answers:{ b8:"redundancy" } },
+    { id:"q6", text:"{b9} means a system is available. {b10} means it is not.", answers:{ b9:"uptime", b10:"downtime" } },
+    { id:"q7", text:"The cloud allows companies to {b11} computing power instead of owning hardware.", answers:{ b11:"rent" } },
+    { id:"q8", text:"{b12} up means adding resources when demand increases.", answers:{ b12:"scaling" } },
+    { id:"q9", text:"{b13} down means removing resources when demand decreases.", answers:{ b13:"scaling" } },
+    { id:"q10", text:"Cloud systems often use {b14} pricing instead of fixed costs.", answers:{ b14:"usage-based" } },
+    { id:"q11", text:"{b15} refers to how much data can move at once.", answers:{ b15:"bandwidth" } },
+    { id:"q12", text:"{b16} refers to delay in data transfer.", answers:{ b16:"latency" } },
+    { id:"q13", text:"{b17} development, {b18} development, cybersecurity, and data & AI all rely on cloud systems.", answers:{ b17:"web", b18:"software" } },
+    { id:"q14", text:"The cloud exists because {b19} changes faster than {b20}.", answers:{ b19:"demand", b20:"hardware" } }
+  ];
+
+  function shuffle(arr){
+    const a = arr.slice();
+    for (let i=a.length-1; i>0; i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function escapeHtml(s){
+    return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+  }
+
+  // ====== STATE ======
+  const state = {
+    filled: {},       // blankId -> chosen word
+    usedCount: {},    // word -> count used (scaling allowed twice)
+    submitted: false,
+    selectedTapWord: "",
+    bankOrder: [],
+    quizOrder: []     // array of question objects in current order
+  };
+
+  function buildBlanks(quizArr){
+    const out = [];
+    for (const q of quizArr){
+      for (const [blankId, correct] of Object.entries(q.answers)){
+        out.push({ qid: q.id, blankId, correct, questionText: q.text });
+      }
+    }
+    return out;
+  }
+
+  function updateProgress(){
+    const total = BLANKS.length;
+    const filledCount = Object.keys(state.filled).filter(k => state.filled[k]).length;
+    document.getElementById("progressPill").textContent = `${filledCount} / ${total} filled`;
+  }
+
+  function updateTapDropdown(){
+    const sel = document.getElementById("tapSelect");
+    const current = state.selectedTapWord;
+    sel.innerHTML = `<option value="">Tap a term to select…</option>` +
+      WORD_BANK.map(w => `<option value="${escapeHtml(w)}">${escapeHtml(w)}</option>`).join("");
+    sel.value = current || "";
+  }
+
+  function canUseWord(word){
+    const max = (word === "scaling") ? 2 : 1;
+    return (state.usedCount[word] || 0) < max;
+  }
+
+  function markWordUsed(word, delta){
+    state.usedCount[word] = (state.usedCount[word] || 0) + delta;
+    if (state.usedCount[word] <= 0) delete state.usedCount[word];
+  }
+
+  function setBlank(blankId, word){
+    if (state.filled[blankId]){
+      const old = state.filled[blankId];
+      state.filled[blankId] = "";
+      markWordUsed(old, -1);
+    }
+    if (!word) return;
+    if (!canUseWord(word)) return;
+
+    state.filled[blankId] = word;
+    markWordUsed(word, +1);
+  }
+
+  function clearBlank(blankId){
+    if (state.filled[blankId]){
+      const old = state.filled[blankId];
+      state.filled[blankId] = "";
+      markWordUsed(old, -1);
+    }
+  }
+
+  function renderTextWithBlanks(q){
+    let html = escapeHtml(q.text);
+    html = html.replace(/\{(b\d+)\}/g, (_, bid) => {
+      const labelNum = bid.replace("b","");
+      return `<span class="blank" data-blank="${bid}" role="button" tabindex="0" aria-label="Blank ${labelNum}">
+                <small>#${labelNum}</small>
+                <span class="blankVal">${state.filled[bid] ? escapeHtml(state.filled[bid]) : ""}</span>
+              </span>`;
+    });
+    return html;
+  }
+
+  function renderBank(bankWords){
+    const bank = document.getElementById("bank");
+    bank.innerHTML = "";
+    bankWords.forEach(word => {
+      const used = !canUseWord(word) ? "used" : "";
+      const el = document.createElement("div");
+      el.className = `token ${used}`;
+      el.textContent = word;
+      el.setAttribute("draggable", used ? "false" : "true");
+      el.dataset.word = word;
+
+      el.addEventListener("dragstart", e => {
+        if (!canUseWord(word)) return e.preventDefault();
+        e.dataTransfer.setData("text/plain", word);
+      });
+
+      el.addEventListener("click", () => {
+        state.selectedTapWord = word;
+        document.getElementById("tapSelect").value = word;
+      });
+
+      bank.appendChild(el);
+    });
+
+    bank.addEventListener("dragover", e => {
+      e.preventDefault();
+      bank.classList.add("dragOver");
+    });
+    bank.addEventListener("dragleave", () => bank.classList.remove("dragOver"));
+    bank.addEventListener("drop", e => {
+      e.preventDefault();
+      bank.classList.remove("dragOver");
+    });
+  }
+
+  function renderQuestions(){
+    const container = document.getElementById("questions");
+    container.innerHTML = "";
+    state.quizOrder.forEach(q => {
+      const div = document.createElement("div");
+      div.className = "q";
+      div.dataset.qid = q.id;
+      div.innerHTML = renderTextWithBlanks(q);
+      container.appendChild(div);
+    });
+
+    // Attach DnD + tap handlers
+    container.querySelectorAll(".blank").forEach(blank => {
+      const blankId = blank.dataset.blank;
+
+      blank.addEventListener("dragover", e => {
+        e.preventDefault();
+        blank.classList.add("dragOver");
+      });
+      blank.addEventListener("dragleave", () => blank.classList.remove("dragOver"));
+      blank.addEventListener("drop", e => {
+        e.preventDefault();
+        blank.classList.remove("dragOver");
+        const word = e.dataTransfer.getData("text/plain");
+        if (!word) return;
+        setBlank(blankId, word);
+        rerenderAll();
+      });
+
+      const tapPlace = () => {
+        const chosen = document.getElementById("tapSelect").value || state.selectedTapWord;
+        if (!chosen) return;
+        if (!canUseWord(chosen) && state.filled[blankId] !== chosen) return;
+        setBlank(blankId, chosen);
+        rerenderAll();
+      };
+
+      blank.addEventListener("click", tapPlace);
+      blank.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          tapPlace();
+        }
+      });
+
+      blank.addEventListener("dblclick", () => {
+        clearBlank(blankId);
+        rerenderAll();
+      });
+    });
+
+    // Dragging out of a blank clears it
+    container.querySelectorAll(".blank").forEach(blank => {
+      blank.setAttribute("draggable", "true");
+      blank.addEventListener("dragstart", e => {
+        const bid = blank.dataset.blank;
+        const word = state.filled[bid];
+        if (!word) return e.preventDefault();
+        e.dataTransfer.setData("text/plain", word);
+        clearBlank(bid);
+        rerenderAll();
+      });
+    });
+  }
+
+  function grade(){
+    const results = [];
+    let correctCount = 0;
+
+    for (const b of BLANKS){
+      const your = (state.filled[b.blankId] || "").trim().toLowerCase();
+      const correct = b.correct.toLowerCase();
+      const ok = your === correct;
+      if (ok) correctCount++;
+      results.push({ ...b, your: state.filled[b.blankId] || "", ok });
+    }
+    return { results, correctCount, total: BLANKS.length };
+  }
+
+  function renderCorrections(gradeObj){
+    const panel = document.getElementById("corrections");
+    const missed = gradeObj.results.filter(r => !r.ok);
+
+    document.getElementById("missedPill").textContent = `Missed: ${state.submitted ? missed.length : "—"}`;
+
+    panel.innerHTML = "";
+    if (!state.submitted){
+      panel.innerHTML = `<div class="hint">Submit your answers to see corrections here.</div>`;
+      return;
+    }
+    if (missed.length === 0){
+      panel.innerHTML = `
+        <div class="fix">
+          <h3>Perfect score 🎉</h3>
+          <p>You got every blank correct.</p>
+        </div>`;
+      return;
+    }
+
+    missed.forEach(r => {
+      let ctx = r.questionText;
+
+      // Replace all blanks in that sentence: missed blank becomes _____, others show filled or correct.
+      for (const other of BLANKS.filter(b => b.qid === r.qid)) {
+        const replacement =
+          other.blankId === r.blankId
+            ? "_____"
+            : (state.filled[other.blankId] || other.correct);
+
+        ctx = ctx.replace(
+          new RegExp("\\{" + other.blankId + "\\}", "g"),
+          replacement
+        );
+      }
+
+      const div = document.createElement("div");
+      div.className = "fix";
+      div.innerHTML = `
+        <h3>Blank ${r.blankId.replace("b","")}</h3>
+        <p><b>Sentence:</b> ${escapeHtml(ctx)}</p>
+        <div class="row">
+          <span class="tag bad">Your answer: ${escapeHtml(r.your || "—")}</span>
+          <span class="tag good">Correct: ${escapeHtml(r.correct)}</span>
+        </div>
+        <p style="margin-top:8px;">
+          <b>Why:</b> ${escapeHtml(EXPLANATIONS[r.blankId] || "")}
+        </p>
+      `;
+      panel.appendChild(div);
+    });
+  }
+
+  function paintAfterSubmit(gradeObj){
+    document.querySelectorAll(".blank").forEach(el => {
+      const bid = el.dataset.blank;
+      const found = gradeObj.results.find(r => r.blankId === bid);
+      el.classList.remove("correct","incorrect");
+      if (!found) return;
+      if (found.ok) el.classList.add("correct");
+      else el.classList.add("incorrect");
+    });
+  }
+
+  function rerenderAll(){
+    renderBank(state.bankOrder);
+    renderQuestions();
+    updateProgress();
+
+    // If already submitted, keep showing grading/corrections consistent with current answers.
+    if (state.submitted){
+      const g = grade();
+      renderCorrections(g);
+      paintAfterSubmit(g);
+    }
+  }
+
+  // ====== INIT ======
+  let BLANKS = [];
+
+  function init(){
+    state.filled = {};
+    state.usedCount = {};
+    state.submitted = false;
+    state.bankOrder = shuffle(WORD_BANK);
+    state.quizOrder = QUIZ_BASE.slice(); // start in original order
+
+    BLANKS = buildBlanks(state.quizOrder);
+
+    document.getElementById("scoreText").textContent = "Score: —";
+    document.getElementById("scoreStatus").textContent = "Fill the blanks, then submit.";
+    document.getElementById("missedPill").textContent = "Missed: —";
+
+    updateTapDropdown();
+    rerenderAll();
+    renderCorrections({results:[], correctCount:0, total:BLANKS.length});
+  }
+
+  // ====== BUTTONS ======
+  document.getElementById("submitBtn").addEventListener("click", () => {
+    const g = grade();
+    state.submitted = true;
+
+    document.getElementById("scoreText").textContent = `Score: ${g.correctCount} / ${g.total}`;
+    const pct = Math.round((g.correctCount / g.total) * 100);
+    document.getElementById("scoreStatus").textContent =
+      (pct === 100) ? "Perfect! Nice work." :
+      (pct >= 80) ? "Good job. Review the missed ones below." :
+      "Keep going. Check the corrections below, then try again.";
+
+    renderCorrections(g);
+    paintAfterSubmit(g);
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", () => {
+    init();
+  });
+
+  document.getElementById("shuffleBtn").addEventListener("click", () => {
+    state.bankOrder = shuffle(WORD_BANK);
+    rerenderAll();
+  });
+
+  // NEW: Shuffle sentences (question order)
+  document.getElementById("shuffleSentencesBtn").addEventListener("click", () => {
+    state.quizOrder = shuffle(state.quizOrder);
+
+    // Rebuild BLANKS in the new order (same blanks/answers, just ordering for grading/context)
+    BLANKS = buildBlanks(state.quizOrder);
+
+    rerenderAll();
+  });
+
+  document.getElementById("tapSelect").addEventListener("change", (e) => {
+    state.selectedTapWord = e.target.value;
+  });
+
+  init();
+</script>
+</body>
+</html>
