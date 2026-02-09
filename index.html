@@ -648,7 +648,21 @@
 
     // Build sentence context: replace only that blank with a highlighted marker.
     missed.forEach(r => {
-      const ctx = r.questionText.replace(new RegExp("\\{"+r.blankId+"\\}","g"), "_____");
+      let ctx = r.questionText;
+
+// Replace ALL blanks intelligently
+for (const other of BLANKS.filter(b => b.qid === r.qid)) {
+  const replacement =
+    other.blankId === r.blankId
+      ? "_____"
+      : (state.filled[other.blankId] || other.correct);
+
+  ctx = ctx.replace(
+    new RegExp("\\{" + other.blankId + "\\}", "g"),
+    replacement
+  );
+}
+
       const div = document.createElement("div");
       div.className = "fix";
       div.innerHTML = `
