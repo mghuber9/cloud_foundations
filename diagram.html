@@ -585,7 +585,9 @@
         }
       }
 
-      zoneEl.classList.add(isCorrect ? "good" : "bad");
+      if(!isCorrect){
+  zoneEl.classList.add("bad");
+}
       if(isCorrect) correctCount++;
     });
 
