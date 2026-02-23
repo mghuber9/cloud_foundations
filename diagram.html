@@ -285,24 +285,32 @@
   // ---------------------------
   // 1) Words (bank)
   // ---------------------------
-  const WORDS = [
-    "Client 1","Client 2","Client 3","Client 4","Client 5","Client 6",
-    "High Bandwidth","High Bandwidth",
-    "Low Bandwidth","Low Bandwidth",
-    "Medium Bandwidth","Medium Bandwidth",
-    "The Internet",
-    "Data Center A (Uptime)",
-    "Data Center B (Uptime)",
-    "Redundant Network",
-    "Data Center C (Downtime)",
-    "Data Center D (High Latency)",
-    "Farther Away",
-    "Data Center E (Uptime)",
-    "Internal Network",
-    "Storage Server",
-    "Processing Server",
-    "The Cloud"
-  ];
+  const WORD_TEXTS = [
+  "Client 1","Client 2","Client 3","Client 4","Client 5","Client 6",
+  "High Bandwidth","High Bandwidth",
+  "Low Bandwidth","Low Bandwidth",
+  "Medium Bandwidth","Medium Bandwidth",
+  "The Internet",
+  "Data Center A (Uptime)",
+  "Data Center B (Uptime)",
+  "Redundant Network",
+  "Data Center C (Downtime)",
+  "Data Center D (High Latency)",
+  "Farther Away",
+  "Data Center E (Uptime)",
+  "Internal Network",
+  "Storage Server",
+  "Processing Server",
+  "The Cloud"
+];
+
+// Create unique instances so duplicates are distinct
+function buildWordInstances(){
+  return WORD_TEXTS.map((text, idx) => ({
+    id: `w${idx}_${Math.random().toString(16).slice(2)}`, // unique enough
+    text
+  }));
+}
 
   // ---------------------------
   // 2) Answer rules
