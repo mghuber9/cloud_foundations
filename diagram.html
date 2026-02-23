@@ -122,7 +122,7 @@
     .diagram{
       position:relative;
       width:100%;
-      max-width: 1100px; /* keeps it manageable on large screens */
+      max-width: 1100px;
       margin:0 auto;
     }
     .diagram img{
@@ -142,8 +142,6 @@
       padding:4px;
       box-sizing:border-box;
       overflow:hidden;
-
-      /* invisible by default; outline can be toggled */
       outline: 2px solid transparent;
       background: rgba(255,255,255,0.0);
     }
@@ -231,7 +229,6 @@
 
   <main class="stage">
     <div class="diagram" id="diagram">
-      <!-- Put your blank image next to this HTML file named diagram.png -->
       <img src="diagram.png" alt="Blank cloud diagram with empty labels"/>
 
       <!-- Dropzones (positioned with percentages) -->
@@ -243,7 +240,7 @@
       <div class="dropzone" data-zone="client5" style="left:4.52%; top:60.56%; width:14.37%; height:6.57%;"></div>
       <div class="dropzone" data-zone="client6" style="left:4.52%; top:74.65%; width:14.37%; height:6.57%;"></div>
 
-      <!-- Bandwidth labels (kept specific to the original diagram) -->
+      <!-- Bandwidth labels -->
       <div class="dropzone" data-zone="bw1" style="left:20.22%; top:14.08%; width:18.09%; height:5.63%;"></div>
       <div class="dropzone" data-zone="bw2" style="left:16.50%; top:25.82%; width:20.76%; height:7.04%;"></div>
       <div class="dropzone" data-zone="bw3" style="left:13.84%; top:38.50%; width:26.61%; height:7.04%;"></div>
@@ -282,39 +279,38 @@
 </div>
 
 <script>
-  // ---------------------------
-  // 1) Words (bank)
-  // ---------------------------
+  // --------------------------------------------------
+  // 1) Word instances (unique IDs so duplicates work)
+  // --------------------------------------------------
   const WORD_TEXTS = [
-  "Client 1","Client 2","Client 3","Client 4","Client 5","Client 6",
-  "High Bandwidth","High Bandwidth",
-  "Low Bandwidth","Low Bandwidth",
-  "Medium Bandwidth","Medium Bandwidth",
-  "The Internet",
-  "Data Center A (Uptime)",
-  "Data Center B (Uptime)",
-  "Redundant Network",
-  "Data Center C (Downtime)",
-  "Data Center D (High Latency)",
-  "Farther Away",
-  "Data Center E (Uptime)",
-  "Internal Network",
-  "Storage Server",
-  "Processing Server",
-  "The Cloud"
-];
+    "Client 1","Client 2","Client 3","Client 4","Client 5","Client 6",
+    "High Bandwidth","High Bandwidth",
+    "Low Bandwidth","Low Bandwidth",
+    "Medium Bandwidth","Medium Bandwidth",
+    "The Internet",
+    "Data Center A (Uptime)",
+    "Data Center B (Uptime)",
+    "Redundant Network",
+    "Data Center C (Downtime)",
+    "Data Center D (High Latency)",
+    "Farther Away",
+    "Data Center E (Uptime)",
+    "Internal Network",
+    "Storage Server",
+    "Processing Server",
+    "The Cloud"
+  ];
 
-// Create unique instances so duplicates are distinct
-function buildWordInstances(){
-  return WORD_TEXTS.map((text, idx) => ({
-    id: `w${idx}_${Math.random().toString(16).slice(2)}`, // unique enough
-    text
-  }));
-}
+  function buildWordInstances(){
+    return WORD_TEXTS.map((text, idx) => ({
+      id: `w_${idx}_${Math.random().toString(16).slice(2)}`,
+      text
+    }));
+  }
 
-  // ---------------------------
-  // 2) Answer rules
-  // ---------------------------
+  // --------------------------------------------------
+  // 2) Answer rules (compare against placedWord.text)
+  // --------------------------------------------------
   const ZONES = {
     // Clients: order doesn't matter
     client1: { type:"group", group:"clients" },
@@ -335,20 +331,19 @@ function buildWordInstances(){
     internet: { type:"exact", answer:"The Internet" },
 
     // Data Centers:
-    // Only Data Center C must be in its specific spot.
     dcC: { type:"exact", answer:"Data Center C (Downtime)" },
 
-    // A/B/D/E can be in any of these four zones (order doesn't matter)
+    // A/B/D/E can be in any of these four zones
     dcA: { type:"group", group:"datacenters_other" },
     dcB: { type:"group", group:"datacenters_other" },
     dcD: { type:"group", group:"datacenters_other" },
     dcE: { type:"group", group:"datacenters_other" },
 
     redundant: { type:"exact", answer:"Redundant Network" },
-    internal: { type:"exact", answer:"Internal Network" },
-    farther: { type:"exact", answer:"Farther Away" },
+    internal:  { type:"exact", answer:"Internal Network" },
+    farther:   { type:"exact", answer:"Farther Away" },
 
-    storage: { type:"exact", answer:"Storage Server" },
+    storage:    { type:"exact", answer:"Storage Server" },
     processing: { type:"exact", answer:"Processing Server" },
 
     cloud: { type:"exact", answer:"The Cloud" }
@@ -364,13 +359,13 @@ function buildWordInstances(){
     ])
   };
 
-  // ---------------------------
+  // --------------------------------------------------
   // 3) State
-  // ---------------------------
+  // --------------------------------------------------
   const state = {
-    // zoneId -> wordText
+    // zoneId -> {id, text}
     placements: {},
-    // available words in bank
+    // array of {id, text}
     bankWords: []
   };
 
@@ -391,22 +386,20 @@ function buildWordInstances(){
   }
 
   function clearFeedback(){
-    zones.forEach(z=>{
-      z.classList.remove("good","bad");
-    });
+    zones.forEach(z=> z.classList.remove("good","bad"));
     scoreBox.textContent = "";
   }
 
-  function createWordChip(text){
+  function createWordChip(wordObj){
     const div = document.createElement("div");
     div.className = "word";
-    div.textContent = text;
+    div.textContent = wordObj.text;
     div.draggable = true;
-    div.dataset.word = text;
+    div.dataset.wordId = wordObj.id;
 
     div.addEventListener("dragstart", (e)=>{
       div.classList.add("dragging");
-      e.dataTransfer.setData("text/plain", text);
+      e.dataTransfer.setData("text/plain", wordObj.id);
     });
     div.addEventListener("dragend", ()=>{
       div.classList.remove("dragging");
@@ -417,8 +410,8 @@ function buildWordInstances(){
 
   function renderBank(){
     bankEl.innerHTML = "";
-    state.bankWords.forEach(w=>{
-      bankEl.appendChild(createWordChip(w));
+    state.bankWords.forEach(wObj=>{
+      bankEl.appendChild(createWordChip(wObj));
     });
   }
 
@@ -434,71 +427,91 @@ function buildWordInstances(){
   function renderZones(){
     zones.forEach(z=>{
       const id = z.dataset.zone;
-      const word = state.placements[id];
-      z.classList.toggle("filled", !!word);
-      setZoneText(z, word || "");
+      const wObj = state.placements[id];
+      z.classList.toggle("filled", !!wObj);
+      setZoneText(z, wObj ? wObj.text : "");
     });
+  }
+
+  function findWordInBank(wordId){
+    return state.bankWords.find(w => w.id === wordId) || null;
+  }
+
+  function removeFromBankById(wordId){
+    const idx = state.bankWords.findIndex(w => w.id === wordId);
+    if(idx >= 0) state.bankWords.splice(idx, 1);
+  }
+
+  function addToBank(wordObj){
+    state.bankWords.push(wordObj);
+  }
+
+  function isZoneFilled(zoneId){
+    return !!state.placements[zoneId];
+  }
+
+  function removeFromZone(zoneId){
+    const existingObj = state.placements[zoneId];
+    if(existingObj){
+      delete state.placements[zoneId];
+      addToBank(existingObj);
+    }
+  }
+
+  // Find a placed word object anywhere (by id)
+  function findPlacedWordById(wordId){
+    for(const [zid, wObj] of Object.entries(state.placements)){
+      if(wObj && wObj.id === wordId){
+        return { zid, wObj };
+      }
+    }
+    return null;
   }
 
   function init(){
     state.placements = {};
-    state.bankWords = shuffle(WORDS);
+    state.bankWords = shuffle(buildWordInstances());
     clearFeedback();
     renderBank();
     renderZones();
   }
 
-  // ---------------------------
+  // --------------------------------------------------
   // 4) Drag & drop behavior
-  // ---------------------------
-  function removeFromBank(word){
-    const idx = state.bankWords.indexOf(word);
-    if(idx >= 0) state.bankWords.splice(idx,1);
-  }
-  function addToBank(word){
-    state.bankWords.push(word);
-  }
-  function isZoneFilled(zoneId){
-    return !!state.placements[zoneId];
-  }
-  function removeFromZone(zoneId){
-    const existing = state.placements[zoneId];
-    if(existing){
-      delete state.placements[zoneId];
-      addToBank(existing);
-    }
-  }
-
+  // --------------------------------------------------
   zones.forEach(zoneEl=>{
-    zoneEl.addEventListener("dragover", (e)=>{
-      e.preventDefault();
-    });
+    zoneEl.addEventListener("dragover", (e)=> e.preventDefault());
 
     zoneEl.addEventListener("drop", (e)=>{
       e.preventDefault();
       clearFeedback();
 
       const zoneId = zoneEl.dataset.zone;
-      const word = e.dataTransfer.getData("text/plain");
-      if(!word) return;
+      const wordId = e.dataTransfer.getData("text/plain");
+      if(!wordId) return;
 
       // If this zone already has a word, return it to bank first.
       if(isZoneFilled(zoneId)){
         removeFromZone(zoneId);
       }
 
-      // If this word is currently placed in some OTHER zone, remove it from there.
-      for(const [zid, w] of Object.entries(state.placements)){
-        if(w === word){
-          delete state.placements[zid];
-        }
+      // If this exact word is already placed elsewhere, remove it from that zone (move it)
+      const placed = findPlacedWordById(wordId);
+      if(placed){
+        delete state.placements[placed.zid];
+        // We'll reuse placed.wObj
+        state.placements[zoneId] = placed.wObj;
+        renderBank();
+        renderZones();
+        return;
       }
 
-      // Remove from bank (if it was in bank)
-      removeFromBank(word);
+      // Otherwise it should be in the bank
+      const bankObj = findWordInBank(wordId);
+      if(!bankObj) return;
 
-      // Place in zone
-      state.placements[zoneId] = word;
+      removeFromBankById(wordId);
+      state.placements[zoneId] = bankObj;
 
       renderBank();
       renderZones();
@@ -521,40 +534,36 @@ function buildWordInstances(){
   bankEl.addEventListener("drop", (e)=>{
     e.preventDefault();
     clearFeedback();
-    const word = e.dataTransfer.getData("text/plain");
-    if(!word) return;
 
-    // If word is placed somewhere, remove it from that zone
-    for(const [zid, w] of Object.entries(state.placements)){
-      if(w === word){
-        delete state.placements[zid];
+    const wordId = e.dataTransfer.getData("text/plain");
+    if(!wordId) return;
+
+    const placed = findPlacedWordById(wordId);
+    if(placed){
+      delete state.placements[placed.zid];
+      if(!state.bankWords.some(w => w.id === wordId)){
+        addToBank(placed.wObj);
       }
+      renderBank();
+      renderZones();
+      return;
     }
-    // If it's not already in bank, add it
-    if(!state.bankWords.includes(word)){
-      addToBank(word);
-    }
-    renderBank();
-    renderZones();
+
+    // If it wasn't placed anywhere and isn't in bank, ignore (shouldn't happen)
   });
 
-  // ---------------------------
+  // --------------------------------------------------
   // 5) Checking / scoring
-  // ---------------------------
+  // --------------------------------------------------
   function checkAnswers(){
     clearFeedback();
 
-    // Ensure all zones have something to check
     const zoneIds = Object.keys(ZONES);
     const unanswered = zoneIds.filter(zid => !state.placements[zid]);
 
     let correctCount = 0;
-    let total = zoneIds.length;
+    const total = zoneIds.length;
 
-    // Build group tracking (uniqueness + membership)
-    // For groups, we check:
-    //  - word is in allowed set
-    //  - no duplicates within that group
     const groupSeen = {};
     for(const gid of Object.keys(GROUPS)){
       groupSeen[gid] = new Set();
@@ -563,18 +572,18 @@ function buildWordInstances(){
     zoneIds.forEach(zoneId=>{
       const zoneEl = zones.find(z => z.dataset.zone === zoneId);
       const rule = ZONES[zoneId];
-      const placed = state.placements[zoneId];
+      const placedObj = state.placements[zoneId];
+      const placedText = placedObj ? placedObj.text : "";
 
       let isCorrect = false;
 
       if(rule.type === "exact"){
-        isCorrect = placed === rule.answer;
+        isCorrect = placedText === rule.answer;
       } else if(rule.type === "group"){
         const allowed = GROUPS[rule.group];
-        if(allowed.has(placed) && !groupSeen[rule.group].has(placed)){
-          // tentatively correct, pending others
+        if(allowed.has(placedText) && !groupSeen[rule.group].has(placedText)){
           isCorrect = true;
-          groupSeen[rule.group].add(placed);
+          groupSeen[rule.group].add(placedText);
         } else {
           isCorrect = false;
         }
@@ -595,9 +604,9 @@ function buildWordInstances(){
     `;
   }
 
-  // ---------------------------
+  // --------------------------------------------------
   // 6) Buttons
-  // ---------------------------
+  // --------------------------------------------------
   submitBtn.addEventListener("click", checkAnswers);
   resetBtn.addEventListener("click", init);
 
