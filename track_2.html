@@ -1,0 +1,785 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Track 2: Cloud Architecture — Drag & Drop Check for Understanding</title>
+  <style>
+    :root{
+      --bg:#0b1220; --panel:#101a2e; --panel2:#0f172a; --text:#e5e7eb;
+      --muted:#a7b0c0; --accent:#60a5fa; --good:#34d399; --bad:#fb7185;
+      --shadow: 0 10px 20px rgba(0,0,0,.25);
+      --radius: 14px;
+      --font: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:var(--font);
+      background:linear-gradient(180deg,#070b14 0%, #0b1220 40%, #070b14 100%);
+      color:var(--text);
+    }
+    header{
+      padding:20px 18px 10px;
+      max-width:1400px; margin:0 auto;
+    }
+    h1{margin:0 0 6px; font-size:20px; font-weight:750; letter-spacing:.2px}
+    .sub{margin:0; color:var(--muted); font-size:14px}
+
+    .wrap{
+      max-width:1400px; margin:0 auto; padding:12px 18px 22px;
+      display:grid;
+      grid-template-columns: 1.25fr .75fr 1fr;
+      gap:14px;
+      align-items:stretch;
+    }
+    @media (max-width: 1120px){
+      .wrap{grid-template-columns: 1fr; }
+    }
+
+    .card{
+      background:linear-gradient(180deg,var(--panel) 0%, var(--panel2) 100%);
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      min-height:0;
+    }
+    .cardHead{
+      padding:14px 14px 10px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      display:flex; align-items:flex-start; justify-content:space-between; gap:10px;
+      flex:0 0 auto;
+    }
+    .cardHead h2{margin:0; font-size:16px; font-weight:750}
+    .pill{
+      font-size:12px; color:var(--muted);
+      border:1px solid rgba(255,255,255,.10);
+      padding:6px 10px; border-radius:999px;
+      white-space:nowrap;
+    }
+
+    .vhBox{
+      height: calc(100vh - 120px);
+      min-height: 520px;
+    }
+    @media (max-width: 1120px){
+      .vhBox{ height:auto; min-height:auto; }
+    }
+
+    .scrollArea{
+      overflow:auto;
+      padding:14px;
+      min-height:0;
+      flex:1 1 auto;
+    }
+
+    .rightTop{
+      padding:14px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      flex:0 0 auto;
+    }
+    .rightBottom{
+      padding:14px;
+      overflow:auto;
+      min-height:0;
+      flex:1 1 auto;
+    }
+
+    .bankBody{
+      padding:14px;
+      overflow:visible;
+      flex:1 1 auto;
+    }
+
+    .controls{
+      display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between;
+      margin-bottom:12px;
+    }
+    .btnRow{display:flex; flex-wrap:wrap; gap:10px}
+    button{
+      background:rgba(96,165,250,.15);
+      border:1px solid rgba(96,165,250,.35);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    button:hover{border-color: rgba(96,165,250,.6)}
+    button.secondary{
+      background:rgba(255,255,255,.06);
+      border-color: rgba(255,255,255,.12);
+      font-weight:650;
+    }
+
+    .hint{ color:var(--muted); font-size:13px; line-height:1.35; }
+
+    .grid{ display:grid; grid-template-columns: 1fr; gap:10px; }
+    .q{
+      padding:12px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(11,22,44,.55);
+      border-radius:14px;
+      line-height:1.55;
+      font-size:15px;
+    }
+
+    /* BLANKS: no numbers (just blanks) */
+    .blank{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:120px;
+      padding:6px 10px;
+      margin:0 4px;
+      border-radius:12px;
+      border:1px dashed rgba(255,255,255,.22);
+      background:rgba(255,255,255,.04);
+      vertical-align:middle;
+      gap:8px;
+      user-select:none;
+    }
+    .blank.correct{
+      border-style:solid;
+      border-color: rgba(52,211,153,.55);
+      background:rgba(52,211,153,.12);
+    }
+    .blank.incorrect{
+      border-style:solid;
+      border-color: rgba(251,113,133,.55);
+      background:rgba(251,113,133,.10);
+    }
+
+    .token{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:8px 10px;
+      border-radius:12px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.14);
+      cursor:grab;
+      font-weight:750;
+      user-select:none;
+      box-shadow: 0 8px 16px rgba(0,0,0,.22);
+    }
+    .token:active{cursor:grabbing}
+    .token.used{
+      opacity:.45;
+      text-decoration: line-through;
+      cursor:not-allowed;
+    }
+
+    .bank{
+      min-height:110px;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(11,22,44,.45);
+      display:flex; flex-wrap:wrap; gap:8px;
+    }
+    .bank.dragOver{outline:2px solid rgba(96,165,250,.5)}
+
+    .scoreBox{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(11,22,44,.45);
+      margin-bottom:12px;
+    }
+    .scoreText{font-weight:800}
+    .status{color:var(--muted); font-size:13px}
+
+    .legend{
+      display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+      color:var(--muted); font-size:12px; margin-top:8px;
+    }
+    .dot{width:10px; height:10px; border-radius:999px; display:inline-block; margin-right:6px}
+    .dot.good{background:var(--good)}
+    .dot.bad{background:var(--bad)}
+    .dot.neutral{background:rgba(255,255,255,.22)}
+
+    select{
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:12px;
+      padding:10px 10px;
+      color:var(--text);
+      font-weight:700;
+      width:100%;
+    }
+    option{background:#0b1220}
+
+    .sideList{ display:grid; gap:10px; }
+    .fix{
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(11,22,44,.55);
+    }
+    .fix h3{margin:0 0 6px; font-size:14px}
+    .fix p{margin:6px 0; color:var(--muted); font-size:13px; line-height:1.35}
+    .fix .row{
+      display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:8px;
+      font-size:13px;
+    }
+    .tag{
+      padding:6px 10px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.05);
+      font-weight:700;
+    }
+    .tag.good{border-color: rgba(52,211,153,.45); background:rgba(52,211,153,.10)}
+    .tag.bad{border-color: rgba(251,113,133,.45); background:rgba(251,113,133,.10)}
+
+    .tapHint{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.04);
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.35;
+    }
+
+    .filterBox{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.04);
+    }
+
+    footer{
+      max-width:1400px; margin:0 auto; padding:0 18px 22px;
+      color:var(--muted); font-size:12px;
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Track 2: Cloud Architecture — Drag & Drop Check for Understanding</h1>
+  <p class="sub">Pick a section (or all sections), drag terms into blanks, then click <b>Submit</b>.</p>
+</header>
+
+<div class="wrap">
+
+  <!-- LEFT: SENTENCES -->
+  <section class="card vhBox" aria-label="Sentences">
+    <div class="cardHead">
+      <h2>Sentences</h2>
+      <div class="pill" id="progressPill">0 / 0 filled</div>
+    </div>
+    <div class="scrollArea">
+      <div id="questions" class="grid"></div>
+    </div>
+  </section>
+
+  <!-- MIDDLE: WORD BANK -->
+  <section class="card" aria-label="Word Bank">
+    <div class="cardHead">
+      <h2>Word Bank</h2>
+      <div class="pill" id="bankPill">Drag terms</div>
+    </div>
+    <div class="bankBody">
+      <div class="hint" style="margin-bottom:10px;">
+        Drag a term into a blank. You can drag a placed term back out to remove it.
+      </div>
+      <div id="bank" class="bank" aria-label="Word bank (drag terms from here)" tabindex="0"></div>
+      <div class="tapHint" style="margin-top:12px;">
+        <b>Phone / tablet tip:</b> Select a term in the dropdown (right panel), then tap a blank to place it.
+      </div>
+    </div>
+  </section>
+
+  <!-- RIGHT: CONTROLS + CORRECTIONS -->
+  <aside class="card vhBox" aria-label="Quiz and Corrections">
+    <div class="cardHead">
+      <h2>Quiz</h2>
+      <div class="pill" id="missedPill">Missed: —</div>
+    </div>
+
+    <div class="rightTop">
+
+      <div class="filterBox">
+        <label for="sectionSelect" class="status" style="display:block;margin-bottom:6px;">Practice mode</label>
+        <select id="sectionSelect" aria-label="Select quiz section">
+          <!-- options injected by JS -->
+        </select>
+        <div class="hint" style="margin-top:8px;">
+          Choose one section to focus, or choose <b>All (Mixed)</b> to scramble across sections.
+        </div>
+      </div>
+
+      <div class="controls" style="margin-top:12px;">
+        <div class="btnRow">
+          <button id="submitBtn">Submit</button>
+          <button class="secondary" id="resetBtn">Reset</button>
+          <button class="secondary" id="shuffleBtn">Shuffle Word Bank</button>
+          <button class="secondary" id="shuffleSentencesBtn">Shuffle Sentences</button>
+        </div>
+        <div class="hint">
+          Tip: Double-click a blank to clear it (desktop).<br>
+          Tap-to-place works on mobile.
+        </div>
+      </div>
+
+      <div class="scoreBox" role="status" aria-live="polite">
+        <div>
+          <div class="scoreText" id="scoreText">Score: —</div>
+          <div class="status" id="scoreStatus">Fill the blanks, then submit.</div>
+        </div>
+        <div style="min-width:180px;">
+          <label for="tapSelect" class="status" style="display:block;margin-bottom:6px;">Tap-to-place (optional)</label>
+          <select id="tapSelect">
+            <option value="">Tap a term to select…</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="legend" aria-hidden="true">
+        <span><span class="dot neutral"></span>Blank</span>
+        <span><span class="dot good"></span>Correct</span>
+        <span><span class="dot bad"></span>Incorrect</span>
+      </div>
+
+      <div class="hint" style="margin-top:12px;">
+        After you submit, missed blanks will show below with the full sentence for context.
+      </div>
+    </div>
+
+    <div class="rightBottom">
+      <div id="corrections" class="sideList"></div>
+    </div>
+  </aside>
+
+</div>
+
+<footer>
+  <div>Template based on your Track 1 drag-and-drop quiz, updated for Track 2 (section filter + blanks without numbers).</div>
+</footer>
+
+<script>
+  // ---------- CONTENT (add new sections here as we build Track 2) ----------
+  const SECTIONS = [
+    {
+      id: "s1",
+      name: "Section 1 — What is Cloud Architecture? (Big Picture)",
+      quiz: [
+        { id:"s1_q1", text:"Cloud systems are {s1_b1} on purpose.", answers:{ s1_b1:"designed" } },
+        { id:"s1_q2", text:"Cloud architecture is the {s1_b2} design of how cloud computers work {s1_b3}.", answers:{ s1_b2:"intentional", s1_b3:"together" } },
+        { id:"s1_q3", text:"Architecture means how {s1_b4} are arranged so something can {s1_b5}.", answers:{ s1_b4:"parts", s1_b5:"function" } },
+        { id:"s1_q4", text:"Cloud architecture exists to solve real-world {s1_b6}.", answers:{ s1_b6:"problems" } },
+        { id:"s1_q5", text:"One giant computer creates a single point of {s1_b7}.", answers:{ s1_b7:"failure" } },
+        { id:"s1_q6", text:"Cloud systems use {s1_b8} computers so the system can keep working when one {s1_b9}.", answers:{ s1_b8:"multiple", s1_b9:"fails" } },
+        { id:"s1_q7", text:"Good design anticipates {s1_b10} instead of reacting after things break.", answers:{ s1_b10:"failure" } },
+        { id:"s1_q8", text:"Cloud architecture helps systems stay {s1_b11} and support many {s1_b12}.", answers:{ s1_b11:"reliable", s1_b12:"users" } },
+        { id:"s1_q9", text:"Cloud architecture helps systems {s1_b13} over time as demand changes.", answers:{ s1_b13:"grow" } },
+        { id:"s1_q10", text:"Engineers design cloud systems assuming something will {s1_b14}.", answers:{ s1_b14:"break" } }
+      ],
+      explanations: {
+        s1_b1: "Cloud systems don’t happen accidentally — they are designed.",
+        s1_b2: "Intentional means planned on purpose.",
+        s1_b3: "Cloud computers work together as a system.",
+        s1_b4: "A system has many parts.",
+        s1_b5: "Architecture is about how parts function together.",
+        s1_b6: "Architecture exists to solve problems (failure, growth, users, unpredictability).",
+        s1_b7: "If there’s only one computer, it’s a single point of failure.",
+        s1_b8: "Cloud systems use multiple computers, not one.",
+        s1_b9: "If one computer fails, others can keep the system running.",
+        s1_b10:"Good design anticipates failure before it happens.",
+        s1_b11:"Reliable means the system keeps working consistently.",
+        s1_b12:"Cloud systems must support many users at once.",
+        s1_b13:"Grow (scale) means handle more demand over time.",
+        s1_b14:"Failure is expected — something will break at some point."
+      }
+    }
+  ];
+
+  // ---------- helpers ----------
+  function shuffle(arr){
+    const a = arr.slice();
+    for (let i=a.length-1; i>0; i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+  }
+
+  // Build max allowed uses of each word based on how many times it appears in correct answers
+  function buildWordLimits(quizArr){
+    const limits = {};
+    quizArr.forEach(q => {
+      Object.values(q.answers).forEach(w => {
+        const word = String(w).toLowerCase();
+        limits[word] = (limits[word] || 0) + 1;
+      });
+    });
+    return limits;
+  }
+  function buildWordBankFromQuiz(quizArr){
+    const set = new Set();
+    quizArr.forEach(q => Object.values(q.answers).forEach(w => set.add(String(w))));
+    return Array.from(set).sort((a,b)=>a.localeCompare(b));
+  }
+  function buildBlankList(quizArr){
+    const out = [];
+    for (const q of quizArr){
+      for (const [blankId, correct] of Object.entries(q.answers)){
+        out.push({ qid: q.id, blankId, correct, questionText: q.text });
+      }
+    }
+    return out;
+  }
+
+  // ---------- state ----------
+  const state = {
+    sectionMode: "all",      // "all" or section id
+    filled: {},
+    usedCount: {},
+    submitted: false,
+    selectedTapWord: "",
+    bankOrder: [],
+    quizOrder: [],
+    wordLimits: {},
+    explanations: {}
+  };
+
+  let BLANKS = [];
+
+  function activeQuiz(){
+    if (state.sectionMode === "all"){
+      // All sections mixed (concatenate, then allow shuffle button)
+      const allQuiz = SECTIONS.flatMap(s => s.quiz);
+      state.explanations = Object.assign({}, ...SECTIONS.map(s => s.explanations));
+      return allQuiz;
+    }
+    const sec = SECTIONS.find(s => s.id === state.sectionMode);
+    state.explanations = sec ? sec.explanations : {};
+    return sec ? sec.quiz : [];
+  }
+
+  function updateProgress(){
+    const total = BLANKS.length;
+    const filledCount = Object.keys(state.filled).filter(k => state.filled[k]).length;
+    document.getElementById("progressPill").textContent = `${filledCount} / ${total} filled`;
+  }
+
+  function updateTapDropdown(wordBank){
+    const sel = document.getElementById("tapSelect");
+    const current = state.selectedTapWord;
+    sel.innerHTML = `<option value="">Tap a term to select…</option>` +
+      wordBank.map(w => `<option value="${escapeHtml(w)}">${escapeHtml(w)}</option>`).join("");
+    sel.value = current || "";
+  }
+
+  function canUseWord(word){
+    const w = String(word).toLowerCase();
+    const max = state.wordLimits[w] || 1;
+    return (state.usedCount[w] || 0) < max;
+  }
+  function markWordUsed(word, delta){
+    const w = String(word).toLowerCase();
+    state.usedCount[w] = (state.usedCount[w] || 0) + delta;
+    if (state.usedCount[w] <= 0) delete state.usedCount[w];
+  }
+  function setBlank(blankId, word){
+    if (state.filled[blankId]){
+      const old = state.filled[blankId];
+      state.filled[blankId] = "";
+      markWordUsed(old, -1);
+    }
+    if (!word) return;
+    if (!canUseWord(word)) return;
+    state.filled[blankId] = word;
+    markWordUsed(word, +1);
+  }
+  function clearBlank(blankId){
+    if (state.filled[blankId]){
+      const old = state.filled[blankId];
+      state.filled[blankId] = "";
+      markWordUsed(old, -1);
+    }
+  }
+
+  function renderTextWithBlanks(q){
+    let html = escapeHtml(q.text);
+    html = html.replace(/\{([^}]+)\}/g, (_, bid) => {
+      const val = state.filled[bid] ? escapeHtml(state.filled[bid]) : "";
+      return `<span class="blank" data-blank="${escapeHtml(bid)}" role="button" tabindex="0" aria-label="Blank">
+                <span class="blankVal">${val}</span>
+              </span>`;
+    });
+    return html;
+  }
+
+  function renderBank(bankWords){
+    const bank = document.getElementById("bank");
+    bank.innerHTML = "";
+    bankWords.forEach(word => {
+      const used = !canUseWord(word) ? "used" : "";
+      const el = document.createElement("div");
+      el.className = `token ${used}`;
+      el.textContent = word;
+      el.setAttribute("draggable", used ? "false" : "true");
+      el.dataset.word = word;
+
+      el.addEventListener("dragstart", e => {
+        if (!canUseWord(word)) return e.preventDefault();
+        e.dataTransfer.setData("text/plain", word);
+      });
+
+      el.addEventListener("click", () => {
+        state.selectedTapWord = word;
+        document.getElementById("tapSelect").value = word;
+      });
+
+      bank.appendChild(el);
+    });
+
+    bank.addEventListener("dragover", e => {
+      e.preventDefault();
+      bank.classList.add("dragOver");
+    });
+    bank.addEventListener("dragleave", () => bank.classList.remove("dragOver"));
+    bank.addEventListener("drop", e => {
+      e.preventDefault();
+      bank.classList.remove("dragOver");
+    });
+  }
+
+  function renderQuestions(){
+    const container = document.getElementById("questions");
+    container.innerHTML = "";
+    state.quizOrder.forEach(q => {
+      const div = document.createElement("div");
+      div.className = "q";
+      div.dataset.qid = q.id;
+      div.innerHTML = renderTextWithBlanks(q);
+      container.appendChild(div);
+    });
+
+    container.querySelectorAll(".blank").forEach(blank => {
+      const blankId = blank.dataset.blank;
+
+      blank.addEventListener("dragover", e => { e.preventDefault(); });
+      blank.addEventListener("drop", e => {
+        e.preventDefault();
+        const word = e.dataTransfer.getData("text/plain");
+        if (!word) return;
+        setBlank(blankId, word);
+        rerenderAll();
+      });
+
+      const tapPlace = () => {
+        const chosen = document.getElementById("tapSelect").value || state.selectedTapWord;
+        if (!chosen) return;
+        if (!canUseWord(chosen) && state.filled[blankId] !== chosen) return;
+        setBlank(blankId, chosen);
+        rerenderAll();
+      };
+
+      blank.addEventListener("click", tapPlace);
+      blank.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          tapPlace();
+        }
+      });
+
+      blank.addEventListener("dblclick", () => {
+        clearBlank(blankId);
+        rerenderAll();
+      });
+    });
+
+    // Drag out of blank clears it
+    container.querySelectorAll(".blank").forEach(blank => {
+      blank.setAttribute("draggable","true");
+      blank.addEventListener("dragstart", e => {
+        const bid = blank.dataset.blank;
+        const word = state.filled[bid];
+        if (!word) return e.preventDefault();
+        e.dataTransfer.setData("text/plain", word);
+        clearBlank(bid);
+        rerenderAll();
+      });
+    });
+  }
+
+  function grade(){
+    const results = [];
+    let correctCount = 0;
+    for (const b of BLANKS){
+      const your = (state.filled[b.blankId] || "").trim().toLowerCase();
+      const correct = String(b.correct).toLowerCase();
+      const ok = your === correct;
+      if (ok) correctCount++;
+      results.push({ ...b, your: state.filled[b.blankId] || "", ok });
+    }
+    return { results, correctCount, total: BLANKS.length };
+  }
+
+  function renderCorrections(gradeObj){
+    const panel = document.getElementById("corrections");
+    const missed = gradeObj.results.filter(r => !r.ok);
+
+    document.getElementById("missedPill").textContent =
+      `Missed: ${state.submitted ? missed.length : "—"}`;
+
+    panel.innerHTML = "";
+    if (!state.submitted){
+      panel.innerHTML = `<div class="hint">Submit your answers to see corrections here.</div>`;
+      return;
+    }
+    if (missed.length === 0){
+      panel.innerHTML = `
+        <div class="fix">
+          <h3>Perfect score 🎉</h3>
+          <p>You got every blank correct.</p>
+        </div>`;
+      return;
+    }
+
+    missed.forEach(r => {
+      let ctx = r.questionText;
+
+      for (const other of BLANKS.filter(b => b.qid === r.qid)) {
+        const replacement =
+          other.blankId === r.blankId
+            ? "_____"
+            : (state.filled[other.blankId] || other.correct);
+
+        ctx = ctx.replace(
+          new RegExp("\\{" + other.blankId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\}", "g"),
+          replacement
+        );
+      }
+
+      const div = document.createElement("div");
+      div.className = "fix";
+      div.innerHTML = `
+        <h3>Missed blank</h3>
+        <p><b>Sentence:</b> ${escapeHtml(ctx)}</p>
+        <div class="row">
+          <span class="tag bad">Your answer: ${escapeHtml(r.your || "—")}</span>
+          <span class="tag good">Correct: ${escapeHtml(r.correct)}</span>
+        </div>
+        <p style="margin-top:8px;">
+          <b>Why:</b> ${escapeHtml(state.explanations[r.blankId] || "")}
+        </p>`;
+      panel.appendChild(div);
+    });
+  }
+
+  function paintAfterSubmit(gradeObj){
+    document.querySelectorAll(".blank").forEach(el => {
+      const bid = el.dataset.blank;
+      const found = gradeObj.results.find(r => r.blankId === bid);
+      el.classList.remove("correct","incorrect");
+      if (!found) return;
+      if (found.ok) el.classList.add("correct");
+      else el.classList.add("incorrect");
+    });
+  }
+
+  function rerenderAll(){
+    renderBank(state.bankOrder);
+    renderQuestions();
+    updateProgress();
+
+    if (state.submitted){
+      const g = grade();
+      renderCorrections(g);
+      paintAfterSubmit(g);
+    }
+  }
+
+  function rebuildFromSelection(resetAnswers=true){
+    const quiz = activeQuiz();
+    state.quizOrder = quiz.slice();
+    BLANKS = buildBlankList(state.quizOrder);
+
+    // Build word bank + limits from active quiz
+    const bank = buildWordBankFromQuiz(state.quizOrder);
+    state.wordLimits = buildWordLimits(state.quizOrder);
+
+    if (resetAnswers){
+      state.filled = {};
+      state.usedCount = {};
+      state.submitted = false;
+      state.selectedTapWord = "";
+      document.getElementById("scoreText").textContent = "Score: —";
+      document.getElementById("scoreStatus").textContent = "Fill the blanks, then submit.";
+      document.getElementById("missedPill").textContent = "Missed: —";
+    }
+
+    state.bankOrder = shuffle(bank);
+    updateTapDropdown(bank);
+    rerenderAll();
+    renderCorrections({results:[], correctCount:0, total:BLANKS.length});
+  }
+
+  function init(){
+    // Populate section dropdown
+    const sel = document.getElementById("sectionSelect");
+    const opts = [
+      { value: "all", label: "All Sections (Mixed)" },
+      ...SECTIONS.map(s => ({ value: s.id, label: s.name }))
+    ];
+    sel.innerHTML = opts.map(o => `<option value="${escapeHtml(o.value)}">${escapeHtml(o.label)}</option>`).join("");
+    sel.value = state.sectionMode;
+
+    sel.addEventListener("change", (e) => {
+      state.sectionMode = e.target.value;
+      rebuildFromSelection(true);
+    });
+
+    document.getElementById("tapSelect").addEventListener("change", (e) => {
+      state.selectedTapWord = e.target.value;
+    });
+
+    // Buttons
+    document.getElementById("submitBtn").addEventListener("click", () => {
+      const g = grade();
+      state.submitted = true;
+
+      document.getElementById("scoreText").textContent = `Score: ${g.correctCount} / ${g.total}`;
+      const pct = g.total ? Math.round((g.correctCount / g.total) * 100) : 0;
+      document.getElementById("scoreStatus").textContent =
+        (pct === 100) ? "Perfect! Nice work." :
+        (pct >= 80) ? "Good job. Review the missed ones below." :
+        "Keep going. Check the corrections below, then try again.";
+
+      renderCorrections(g);
+      paintAfterSubmit(g);
+    });
+
+    document.getElementById("resetBtn").addEventListener("click", () => rebuildFromSelection(true));
+
+    document.getElementById("shuffleBtn").addEventListener("click", () => {
+      state.bankOrder = shuffle(state.bankOrder);
+      rerenderAll();
+    });
+
+    document.getElementById("shuffleSentencesBtn").addEventListener("click", () => {
+      state.quizOrder = shuffle(state.quizOrder);
+      BLANKS = buildBlankList(state.quizOrder);
+      rerenderAll();
+    });
+
+    // Initial build
+    rebuildFromSelection(true);
+  }
+
+  init();
+</script>
+</body>
+</html>
